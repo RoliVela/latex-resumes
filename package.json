@@ -1,0 +1,13 @@
+{
+  "name": "latex-resumes",
+  "version": "2.0.0",
+  "private": true,
+  "description": "LaTeX resume templates with AI autofill — hosted on Vercel.",
+  "scripts": {
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "dependencies": {}
+}

@@ -1,11 +1,12 @@
 /*
   LaTeX Resumes — Interactions
-  Vanilla JS. No frameworks. Runs by opening index.html.
+  Vanilla JS. No frameworks. Served via Vercel (static + /api serverless functions).
 
   TODO(Roli):
   1. Replace STRIPE_PAYMENT_LINK with your Stripe Payment Link URL.
   2. Replace [ROLI_LINKEDIN_URL] in index.html with your LinkedIn URL.
   3. Confirm EmailJS template variables match the input name= attributes in index.html.
+  4. Add your Cloudflare Turnstile site key to the data-sitekey attribute in index.html.
 */
 
 (() => {
@@ -40,7 +41,8 @@
   };
 
   const texCache = {};
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const customTex = {};
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ------------------------------------------------------------------
      Utilities
@@ -155,6 +157,43 @@
   }
 
   /* ------------------------------------------------------------------
+     Hero preview stack cycling
+     ------------------------------------------------------------------ */
+  function initPreviewStack() {
+    const stack = $('.preview-stack');
+    if (!stack) return;
+
+    const cycle = () => {
+      const front = stack.querySelector('img:last-child');
+      if (!front) return;
+
+      if (reducedMotion) {
+        stack.insertBefore(front, stack.firstElementChild);
+        return;
+      }
+
+      front.classList.add('leaving');
+      stack.classList.add('cycling');
+
+      setTimeout(() => {
+        front.classList.remove('leaving');
+        stack.classList.remove('cycling');
+        stack.insertBefore(front, stack.firstElementChild);
+      }, 550);
+    };
+
+    const handleActivate = (evt) => {
+      // Ignore if the user is selecting text or dragging.
+      if (evt.type === 'keydown' && evt.key !== 'Enter' && evt.key !== ' ') return;
+      if (evt.type === 'keydown') evt.preventDefault();
+      cycle();
+    };
+
+    stack.addEventListener('click', handleActivate);
+    stack.addEventListener('keydown', handleActivate);
+  }
+
+  /* ------------------------------------------------------------------
      Copy to Clipboard
      ------------------------------------------------------------------ */
   async function fetchTemplate(key) {
@@ -166,14 +205,24 @@
     return text;
   }
 
+  function getCopyLabel(customReady) {
+    if (customReady) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Custom Code Ready — Copy Code</span>`;
+    }
+    return `<span>Copy Code</span>`;
+  }
+
   async function copyTemplate(key, btn) {
-    const originalHTML = btn.innerHTML;
+    const customReady = !!customTex[key];
+    const originalHTML = customReady
+      ? getCopyLabel(true)
+      : btn.innerHTML;
     const originalWidth = btn.getBoundingClientRect().width;
     btn.style.minWidth = `${originalWidth}px`;
 
     const setIdle = () => {
       btn.classList.remove('success');
-      btn.innerHTML = originalHTML;
+      btn.innerHTML = customReady ? getCopyLabel(true) : originalHTML;
       btn.style.minWidth = '';
     };
 
@@ -189,7 +238,12 @@
     };
 
     try {
-      const text = await fetchTemplate(key);
+      let text;
+      if (customReady) {
+        text = customTex[key];
+      } else {
+        text = await fetchTemplate(key);
+      }
 
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(text);
@@ -216,10 +270,371 @@
     }
   }
 
+  function findCardForTemplate(key) {
+    const copyBtn = $(`[data-tex="${key}"]`);
+    if (!copyBtn) return null;
+    return copyBtn.closest('.template-card');
+  }
+
+  function setCustomState(key, latex) {
+    customTex[key] = latex;
+    const card = findCardForTemplate(key);
+    if (!card) return;
+    const copyBtn = card.querySelector(`[data-tex="${key}"]`);
+    const resetBtn = card.querySelector(`[data-reset="${key}"]`);
+    if (copyBtn) {
+      copyBtn.innerHTML = getCopyLabel(true);
+    }
+    if (resetBtn) {
+      resetBtn.hidden = false;
+    }
+  }
+
+  function resetCustomState(key) {
+    delete customTex[key];
+    const card = findCardForTemplate(key);
+    if (!card) return;
+    const copyBtn = card.querySelector(`[data-tex="${key}"]`);
+    const resetBtn = card.querySelector(`[data-reset="${key}"]`);
+    if (copyBtn) {
+      copyBtn.innerHTML = `<span>Copy Code</span>`;
+    }
+    if (resetBtn) {
+      resetBtn.hidden = true;
+    }
+  }
+
   function initCopyButtons() {
     $$('.btn-copy').forEach((btn) => {
       btn.addEventListener('click', () => copyTemplate(btn.dataset.tex, btn));
     });
+    $$('.btn-reset').forEach((btn) => {
+      btn.addEventListener('click', () => resetCustomState(btn.dataset.reset));
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     AI Autofill
+     ------------------------------------------------------------------ */
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+  const MAX_RESUME_CHARS = 15000;
+  const ALLOWED_TYPES = {
+    pdf: ['application/pdf'],
+    docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    txt: ['text/plain'],
+  };
+  const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.txt'];
+
+  let currentAutofillKey = null;
+  let currentFile = null;
+  let currentTurnstileToken = null;
+
+  const aiModal = document.getElementById('ai-modal');
+  const aiModalClose = document.getElementById('ai-modal-close');
+  const aiBackdrop = $('.ai-modal .modal-backdrop');
+  const aiTemplateName = document.getElementById('ai-template-name');
+  const aiDropzone = document.getElementById('ai-dropzone');
+  const aiFileInput = document.getElementById('ai-file-input');
+  const aiFileName = document.getElementById('ai-file-name');
+  const aiStatus = document.getElementById('ai-status');
+  const aiGenerate = document.getElementById('ai-generate');
+
+  function setAiStatus(text, type = '') {
+    if (!aiStatus) return;
+    aiStatus.textContent = text;
+    aiStatus.className = `ai-status ${type}`;
+  }
+
+  function isAllowedFile(file) {
+    const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) return false;
+    const typeOk = Object.values(ALLOWED_TYPES).some((types) => types.includes(file.type));
+    return typeOk;
+  }
+
+  function validateFile(file) {
+    if (!file) return 'Please choose a file first.';
+    const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return 'Unsupported file type. Please upload a PDF, DOCX, or TXT file.';
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return 'File is too large. Maximum size is 5 MB.';
+    }
+    const typeOk = Object.values(ALLOWED_TYPES).some((types) => types.includes(file.type));
+    if (!typeOk) {
+      return 'File type does not match its extension. Please upload a valid PDF, DOCX, or TXT file.';
+    }
+    return null;
+  }
+
+  async function extractText(file) {
+    const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+
+    if (ext === '.txt') {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error('Could not read text file.'));
+        reader.readAsText(file);
+      });
+    }
+
+    if (ext === '.docx') {
+      if (typeof mammoth === 'undefined') {
+        throw new Error('DOCX library is not loaded. Please refresh and try again.');
+      }
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      return result.value;
+    }
+
+    if (ext === '.pdf') {
+      if (typeof pdfjsLib === 'undefined') {
+        throw new Error('PDF library is not loaded. Please refresh and try again.');
+      }
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        pages.push(textContent.items.map((item) => item.str).join(' '));
+      }
+      return pages.join('\n');
+    }
+
+    throw new Error('Unsupported file type.');
+  }
+
+  function truncateText(text, max) {
+    if (text.length <= max) return text;
+    return text.slice(0, max);
+  }
+
+  function openAiModal(key) {
+    if (!aiModal) return;
+    currentAutofillKey = key;
+    currentFile = null;
+    currentTurnstileToken = null;
+
+    if (aiTemplateName) {
+      aiTemplateName.textContent = TEMPLATES[key]?.title || '';
+    }
+    if (aiFileName) aiFileName.textContent = '';
+    setAiStatus('');
+    if (aiFileInput) aiFileInput.value = '';
+    updateGenerateButton();
+
+    aiModal.hidden = false;
+    void aiModal.offsetWidth;
+    aiModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Reset Turnstile widget so the user gets a fresh challenge each time.
+    if (window.turnstile && aiModal.querySelector('.cf-turnstile')) {
+      try {
+        window.turnstile.reset(aiModal.querySelector('.cf-turnstile'));
+      } catch (err) {
+        // Widget may not have rendered yet; ignore.
+      }
+    }
+
+    setTimeout(() => aiModalClose && aiModalClose.focus(), 0);
+  }
+
+  function closeAiModal() {
+    if (!aiModal) return;
+    aiModal.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => {
+      aiModal.hidden = true;
+      currentAutofillKey = null;
+      currentFile = null;
+      currentTurnstileToken = null;
+    }, 220);
+  }
+
+  function updateGenerateButton() {
+    if (!aiGenerate) return;
+    const valid = currentFile && currentTurnstileToken;
+    aiGenerate.disabled = !valid;
+  }
+
+  async function handleGenerate() {
+    if (!currentAutofillKey || !currentFile) return;
+
+    const validation = validateFile(currentFile);
+    if (validation) {
+      setAiStatus(validation, 'error');
+      return;
+    }
+
+    aiGenerate.disabled = true;
+    setAiStatus('Reading your résumé…', 'loading');
+
+    let resumeText = '';
+    try {
+      resumeText = await extractText(currentFile);
+    } catch (err) {
+      console.error('Extraction error:', err);
+      setAiStatus('We couldn\'t read text from this file — try a text-based PDF, a DOCX, or paste your info.', 'error');
+      aiGenerate.disabled = false;
+      return;
+    }
+
+    if (!resumeText.trim()) {
+      setAiStatus('We couldn\'t read text from this file — try a text-based PDF, a DOCX, or paste your info.', 'error');
+      aiGenerate.disabled = false;
+      return;
+    }
+
+    resumeText = truncateText(resumeText, MAX_RESUME_CHARS);
+    setAiStatus('Building your LaTeX…', 'loading');
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template: currentAutofillKey,
+          resumeText,
+          turnstileToken: currentTurnstileToken,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const message = data.message || data.error || 'The AI is busy — please try again.';
+        if (response.status === 429) {
+          setAiStatus('You\'ve hit today\'s free limit — try again tomorrow.', 'error');
+        } else if (response.status === 403) {
+          setAiStatus('Security check failed — please refresh and try again.', 'error');
+        } else {
+          setAiStatus(message, 'error');
+        }
+        aiGenerate.disabled = false;
+        return;
+      }
+
+      if (!data.latex) {
+        setAiStatus('The AI returned an empty response — please try again.', 'error');
+        aiGenerate.disabled = false;
+        return;
+      }
+
+      setCustomState(currentAutofillKey, data.latex);
+      setAiStatus('Your custom LaTeX is ready!', 'success');
+      setTimeout(closeAiModal, 600);
+    } catch (err) {
+      console.error('Generate error:', err);
+      setAiStatus('The AI is busy — please try again.', 'error');
+      aiGenerate.disabled = false;
+    }
+  }
+
+  function initAutofill() {
+    $$('.btn-autofill').forEach((btn) => {
+      btn.addEventListener('click', () => openAiModal(btn.dataset.autofill));
+    });
+
+    if (aiModalClose) aiModalClose.addEventListener('click', closeAiModal);
+    if (aiBackdrop) aiBackdrop.addEventListener('click', closeAiModal);
+
+    if (aiDropzone && aiFileInput) {
+      aiDropzone.addEventListener('click', () => aiFileInput.click());
+      aiDropzone.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Enter' || evt.key === ' ') {
+          evt.preventDefault();
+          aiFileInput.click();
+        }
+      });
+
+      ['dragenter', 'dragover'].forEach((evtName) => {
+        aiDropzone.addEventListener(evtName, (evt) => {
+          evt.preventDefault();
+          aiDropzone.classList.add('drag-over');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach((evtName) => {
+        aiDropzone.addEventListener(evtName, (evt) => {
+          evt.preventDefault();
+          aiDropzone.classList.remove('drag-over');
+        });
+      });
+
+      aiDropzone.addEventListener('drop', (evt) => {
+        if (evt.dataTransfer.files && evt.dataTransfer.files[0]) {
+          currentFile = evt.dataTransfer.files[0];
+          aiFileName.textContent = currentFile.name;
+          setAiStatus('');
+          updateGenerateButton();
+        }
+      });
+
+      aiFileInput.addEventListener('change', (evt) => {
+        if (evt.target.files && evt.target.files[0]) {
+          currentFile = evt.target.files[0];
+          aiFileName.textContent = currentFile.name;
+          setAiStatus('');
+          updateGenerateButton();
+        }
+      });
+    }
+
+    if (aiGenerate) {
+      aiGenerate.addEventListener('click', handleGenerate);
+    }
+
+    document.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Escape' && aiModal && aiModal.classList.contains('open')) {
+        closeAiModal();
+      }
+    });
+
+    // Listen for Turnstile token from the global callback defined in index.html.
+    window.addEventListener('turnstile-token', (evt) => {
+      currentTurnstileToken = evt.detail && evt.detail.token ? evt.detail.token : evt.detail;
+      updateGenerateButton();
+    });
+
+    // Fallback: Cloudflare Turnstile calls this global callback directly.
+    window.turnstileSuccess = function(token) {
+      currentTurnstileToken = token;
+      updateGenerateButton();
+    };
+  }
+
+  /* ------------------------------------------------------------------
+     Visitor counter (CounterAPI)
+     ------------------------------------------------------------------ */
+  function initVisitorCounter() {
+    const COUNTER_WORKSPACE = 'rolivela';
+    const COUNTER_KEY = 'latex-resumes-visits';
+    const el = document.getElementById('visit-count');
+    const footerCounter = document.getElementById('footer-counter');
+
+    if (!el || !footerCounter) return;
+
+    fetch(`https://api.counterapi.dev/v1/${COUNTER_WORKSPACE}/${COUNTER_KEY}/up`)
+      .then((r) => {
+        if (!r.ok) throw new Error('counter');
+        return r.json();
+      })
+      .then((res) => {
+        if (res && typeof res.count === 'number') {
+          el.textContent = res.count.toLocaleString();
+          footerCounter.classList.add('visible');
+          footerCounter.removeAttribute('aria-hidden');
+        } else {
+          throw new Error('counter');
+        }
+      })
+      .catch(() => {
+        // Graceful fallback: keep the counter hidden if the request fails.
+      });
   }
 
   /* ------------------------------------------------------------------
@@ -355,10 +770,13 @@
   function init() {
     setYear();
     initSmoothScroll();
+    initPreviewStack();
     initModal();
     initCopyButtons();
+    initAutofill();
     initDonate();
     initLinkedInPlaceholder();
+    initVisitorCounter();
     initFeedbackForm();
     initReveal();
   }

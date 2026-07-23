@@ -45,11 +45,12 @@
           </div>
         </div>
         <div class="hero-visual reveal" aria-hidden="true">
-          <div class="preview-stack">
-            <img src="assets/previews/undergraduate.png" alt="" loading="lazy">
-            <img src="assets/previews/graduate.png" alt="" loading="lazy">
-            <img src="assets/previews/roli.png" alt="" loading="lazy">
+          <div class="preview-stack" role="button" tabindex="0" aria-label="Preview résumé templates — activate to cycle">
+            <img src="assets/previews/undergraduate.png" alt="" loading="lazy" data-index="0">
+            <img src="assets/previews/graduate.png" alt="" loading="lazy" data-index="1">
+            <img src="assets/previews/roli.png" alt="" loading="lazy" data-index="2">
           </div>
+          <p class="stack-hint" aria-hidden="true">Click to flip through</p>
         </div>
       </div>
     </section>
@@ -104,7 +105,9 @@
             </div>
             <div class="card-actions">
               <button class="btn btn-secondary btn-view" type="button" data-preview="undergraduate">View Template</button>
+              <button class="btn btn-ai btn-autofill" type="button" data-autofill="undergraduate">Autofill with AI</button>
               <button class="btn btn-primary btn-copy" type="button" data-tex="undergraduate">Copy Code</button>
+              <button class="btn btn-reset" type="button" data-reset="undergraduate" aria-label="Use blank template instead" hidden>Use blank template</button>
             </div>
           </article>
 
@@ -116,7 +119,9 @@
             </div>
             <div class="card-actions">
               <button class="btn btn-secondary btn-view" type="button" data-preview="graduate">View Template</button>
+              <button class="btn btn-ai btn-autofill" type="button" data-autofill="graduate">Autofill with AI</button>
               <button class="btn btn-primary btn-copy" type="button" data-tex="graduate">Copy Code</button>
+              <button class="btn btn-reset" type="button" data-reset="graduate" aria-label="Use blank template instead" hidden>Use blank template</button>
             </div>
           </article>
 
@@ -128,7 +133,9 @@
             </div>
             <div class="card-actions">
               <button class="btn btn-secondary btn-view" type="button" data-preview="roli">View Template</button>
+              <button class="btn btn-ai btn-autofill" type="button" data-autofill="roli">Autofill with AI</button>
               <button class="btn btn-primary btn-copy" type="button" data-tex="roli">Copy Code</button>
+              <button class="btn btn-reset" type="button" data-reset="roli" aria-label="Use blank template instead" hidden>Use blank template</button>
             </div>
           </article>
         </div>
@@ -146,6 +153,25 @@
             <button id="donate-btn" class="btn btn-primary btn-lg" type="button">Donate</button>
             <p id="donate-note" class="donate-note" aria-live="polite"></p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="section how-it-works" aria-labelledby="how-it-works-title">
+      <div class="container">
+        <div class="panel glass how-it-works-panel reveal">
+          <h2 id="how-it-works-title" class="section-title">How this site works</h2>
+          <p class="section-intro">This is a small, hand-built project for sharing LaTeX résumé templates. LaTeX is a typesetting language that produces clean, consistently formatted PDFs that applicant tracking systems parse reliably. Preview any of the three templates, copy its code straight into Overleaf, or upload your own résumé and let AI fill the template in with your information — then finish it in Overleaf in a few minutes.</p>
+          <h3 class="how-it-works-subtitle">Built with</h3>
+          <ul class="built-with-list">
+            <li><strong>Front end:</strong> hand-written HTML, CSS &amp; JavaScript — no frameworks</li>
+            <li><strong>Résumés:</strong> LaTeX, edited in Overleaf</li>
+            <li><strong>AI autofill:</strong> pdf.js &amp; mammoth.js (reads your file in the browser) + an NVIDIA Llama model via a Vercel serverless function, protected by Cloudflare Turnstile</li>
+            <li><strong>Feedback:</strong> EmailJS</li>
+            <li><strong>Visitor counter:</strong> CounterAPI</li>
+            <li><strong>Hosting &amp; code:</strong> Vercel, version-controlled with Git &amp; GitHub</li>
+          </ul>
+          <p class="how-it-works-footer">Built by Roli Vela</p>
         </div>
       </div>
     </section>
@@ -189,11 +215,15 @@
 
   <footer class="site-footer glass">
     <div class="container footer-inner">
-      <span class="footer-made">Made by <a href="https://github.com/RoliVela" target="_blank" rel="noopener">Roli Vela</a></span>
+      <span class="footer-made">Made by Roli Vela</span>
       <span class="footer-links">
         <a href="https://github.com/RoliVela" target="_blank" rel="noopener">GitHub</a>
         <!-- TODO(Roli): replace the # below with your LinkedIn URL, e.g. https://www.linkedin.com/in/roli-vela/ -->
         <a id="linkedin-placeholder" href="#" aria-label="LinkedIn — coming soon" target="_blank" rel="noopener">LinkedIn</a>
+      </span>
+      <span class="footer-counter" id="footer-counter" aria-live="polite" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <span id="visit-count">—</span> visitors
       </span>
       <span class="copyright">Templates are free to use and adapt. © <span id="year">2026</span></span>
     </div>
@@ -213,6 +243,46 @@
     </div>
   </div>
 
+  <!-- AI autofill modal -->
+  <div id="ai-modal" class="modal ai-modal" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title" hidden>
+    <div class="modal-backdrop" aria-hidden="true"></div>
+    <div class="modal-panel glass" role="document">
+      <button id="ai-modal-close" class="modal-close" type="button" aria-label="Close autofill dialog">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3 id="ai-modal-title" class="modal-title">Autofill with AI</h3>
+      <p id="ai-template-name" class="ai-modal-subtitle">Undergraduate Resume</p>
+      <div class="ai-modal-body">
+        <p class="ai-instructions">Upload your existing résumé (PDF, DOCX, or TXT). We’ll read it and fill this template with your real info.</p>
+        <div id="ai-dropzone" class="ai-dropzone" role="button" tabindex="0" aria-label="Choose or drop a résumé file">
+          <input type="file" id="ai-file-input" accept=".pdf,.docx,.txt" aria-hidden="true">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <p class="ai-dropzone-text"><strong>Click to choose a file</strong> or drag and drop</p>
+          <p class="ai-dropzone-hint">PDF, DOCX, or TXT — up to 5 MB</p>
+          <p id="ai-file-name" class="ai-file-name" aria-live="polite"></p>
+        </div>
+        <p class="ai-privacy">Your file is processed once to generate LaTeX and is not stored.</p>
+        <div id="ai-turnstile" class="cf-turnstile" data-sitekey="" data-callback="turnstileSuccess" data-theme="light" aria-label="Security verification"></div>
+        <div id="ai-status" class="ai-status" aria-live="polite"></div>
+        <div class="ai-actions">
+          <button id="ai-generate" class="btn btn-primary" type="button" disabled>Generate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client-side extraction libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" id="pdf-lib"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.0/mammoth.browser.min.js" crossorigin="anonymous" id="mammoth-lib"></script>
+  <!-- Cloudflare Turnstile -->
+  <!-- TODO(Roli): paste your public Turnstile site key into data-sitekey below -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    // Cloudflare Turnstile success callback; script.js also wires window.turnstileSuccess.
+    window.turnstileSuccess = function(token) {
+      window.dispatchEvent(new CustomEvent('turnstile-token', { detail: { token } }));
+    };
+  </script>
   <!-- EmailJS v4 SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="script.js"></script>
