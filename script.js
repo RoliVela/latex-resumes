@@ -443,6 +443,7 @@
         step.removeAttribute('aria-current');
       }
     });
+    shakeModal();
   }
 
   function isAllowedFile(file) {
@@ -549,6 +550,7 @@
     if (!aiModal) return;
     if (currentAutofillKey) hideCardSkeleton(currentAutofillKey);
     aiModal.classList.remove('open');
+    aiModal.querySelector('.modal-panel')?.classList.remove('shake');
     document.body.style.overflow = '';
     setTimeout(() => {
       aiModal.hidden = true;
@@ -556,6 +558,16 @@
       currentFile = null;
       currentTurnstileToken = null;
     }, 220);
+  }
+
+  function shakeModal() {
+    if (reducedMotion) return;
+    const panel = aiModal?.querySelector('.modal-panel');
+    if (!panel) return;
+    panel.classList.remove('shake');
+    void panel.offsetWidth;
+    panel.classList.add('shake');
+    panel.addEventListener('animationend', () => panel.classList.remove('shake'), { once: true });
   }
 
   function updateGenerateButton() {

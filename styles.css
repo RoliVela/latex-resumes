@@ -1233,6 +1233,17 @@ ul, ol {
   transform: scale(1);
 }
 
+.modal-panel.shake {
+  animation: modal-shake 0.35s var(--ease-out);
+}
+
+@keyframes modal-shake {
+  0%, 100% { transform: scale(1) translateX(0); }
+  25% { transform: scale(1) translateX(-6px); }
+  50% { transform: scale(1) translateX(6px); }
+  75% { transform: scale(1) translateX(-4px); }
+}
+
 .modal-close {
   position: absolute;
   top: 16px;
