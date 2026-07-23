@@ -435,13 +435,19 @@
 
   const REASSURANCE_MESSAGES = [
     'Understanding your experience…',
+    'Scanning your skills and achievements…',
     'Matching it to the template…',
+    'Organizing your education and work history…',
     'Structuring your sections…',
+    'Formatting your bullet points…',
     'Writing clean LaTeX…',
+    'Escaping the special characters…',
+    'Aligning everything to the layout…',
     'Polishing the formatting…',
+    'Making it recruiter-ready…',
     'Almost there…',
   ];
-  const REASSURANCE_INTERVAL_MS = 2500;
+  const REASSURANCE_INTERVAL_MS = 5000;
   const REASSURANCE_FADE_MS = 250;
   let reassuranceTimer = null;
 
