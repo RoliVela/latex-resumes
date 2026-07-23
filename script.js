@@ -446,6 +446,10 @@
     shakeModal();
   }
 
+  function markStepperSuccess() {
+    setStepperStep(2);
+  }
+
   function isAllowedFile(file) {
     const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) return false;
@@ -651,10 +655,13 @@
       }
 
       setCustomState(currentAutofillKey, data.latex);
-      hideStepper();
-      hideCardSkeleton(currentAutofillKey);
+      markStepperSuccess();
       setAiStatus('Your custom LaTeX is ready!', 'success');
-      setTimeout(closeAiModal, 600);
+      setTimeout(() => {
+        hideStepper();
+        hideCardSkeleton(currentAutofillKey);
+        closeAiModal();
+      }, 800);
     } catch (err) {
       console.error('Generate error:', err);
       markStepperError();

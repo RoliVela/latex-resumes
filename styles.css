@@ -1177,7 +1177,8 @@ ul, ol {
   font-weight: 600;
 }
 
-.ai-stepper[data-active="1"] .ai-step-connector {
+.ai-stepper[data-active="1"] .ai-step-connector,
+.ai-stepper[data-active="2"] .ai-step-connector {
   background: var(--accent-grad);
 }
 
