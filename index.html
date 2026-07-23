@@ -194,17 +194,17 @@
             -->
             <div class="form-row">
               <div class="field">
-                <label for="from_name">Name</label>
-                <input type="text" id="from_name" name="from_name" required autocomplete="name">
+                <label for="from_name">Name <span class="field-optional">(optional)</span></label>
+                <input type="text" id="from_name" name="from_name" autocomplete="name">
               </div>
               <div class="field">
-                <label for="reply_to">Email</label>
-                <input type="email" id="reply_to" name="reply_to" required autocomplete="email">
+                <label for="reply_to">Email <span class="field-optional">(optional)</span></label>
+                <input type="email" id="reply_to" name="reply_to" autocomplete="email">
               </div>
             </div>
             <div class="field">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" rows="5" required></textarea>
+              <label for="message">Message <span class="required-asterisk" aria-hidden="true">*</span></label>
+              <textarea id="message" name="message" rows="5" required aria-required="true"></textarea>
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Send</button>
