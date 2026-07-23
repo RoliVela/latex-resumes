@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="icon" type="image/png" href="assets/favicon.png">
-  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -199,7 +199,7 @@
               </div>
               <div class="field">
                 <label for="reply_to">Email <span class="field-optional">(optional)</span></label>
-                <input type="email" id="reply_to" name="reply_to" autocomplete="email">
+                <input type="email" id="reply_to" name="reply_to" autocomplete="email" spellcheck="false">
               </div>
             </div>
             <div class="field">
@@ -275,7 +275,10 @@
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
           <p class="ai-dropzone-text"><strong>Click to choose a file</strong> or drag and drop</p>
           <p class="ai-dropzone-hint">PDF, DOCX, or TXT — up to 5 MB</p>
-          <p id="ai-file-name" class="ai-file-name" aria-live="polite"></p>
+          <p id="ai-file-name" class="ai-file-name" aria-live="polite">
+            <svg class="ai-file-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span id="ai-file-name-text"></span>
+          </p>
         </div>
         <p class="ai-privacy">Your file is processed once to generate LaTeX and is not stored.</p>
         <div id="ai-turnstile" class="cf-turnstile" data-sitekey="0x4AAAAAAD8Nde1BEHFDEtEB" data-callback="turnstileSuccess" data-theme="light" aria-label="Security verification"></div>

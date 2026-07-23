@@ -141,6 +141,7 @@ ul, ol {
 
 .section {
   padding: 96px 0;
+  scroll-margin-top: 84px;
 }
 
 .section-header {
@@ -227,6 +228,7 @@ ul, ol {
   position: relative;
   padding: 128px 0 96px;
   overflow: hidden;
+  scroll-margin-top: 84px;
 }
 
 .hero-grid {
@@ -237,13 +239,29 @@ ul, ol {
 }
 
 .eyebrow {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-soft);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent-ink);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.eyebrow::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-grad);
 }
 
 .hero h1 {
@@ -313,6 +331,8 @@ ul, ol {
 
 .preview-stack img {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 300px;
   height: auto;
   border-radius: 10px;
@@ -320,82 +340,42 @@ ul, ol {
     0 2px 6px rgba(33, 28, 22, 0.07),
     0 16px 36px rgba(33, 28, 22, 0.12),
     0 36px 72px rgba(33, 28, 22, 0.14);
-  transition: transform 0.62s var(--ease-out), box-shadow 0.62s var(--ease-out);
+  transition: transform 0.6s var(--ease-out), box-shadow 0.6s var(--ease-out);
   user-select: none;
   -webkit-user-drag: none;
   will-change: transform;
 }
 
-/* Stacking positions managed by JS data attributes.
+/* Stacking positions managed by JS data attributes — transform only,
+   so the click-to-cycle animation (driven by the Web Animations API in
+   script.js) never touches layout-affecting properties.
    0 = back, 1 = middle, 2 = front */
 .preview-stack img[data-stack-pos="0"] {
-  top: 80px;
-  left: 10px;
-  transform: rotate(-8deg) translate(-22px, 12px);
+  transform: translate(-12px, 92px) rotate(-8deg);
   z-index: 1;
 }
 
 .preview-stack img[data-stack-pos="1"] {
-  top: 40px;
-  left: 55px;
-  transform: rotate(6deg) translate(12px, -10px);
+  transform: translate(67px, 30px) rotate(6deg);
   z-index: 2;
 }
 
 .preview-stack img[data-stack-pos="2"] {
-  top: 0;
-  left: 25px;
-  transform: rotate(0deg);
+  transform: translate(25px, 0) rotate(0deg);
   z-index: 3;
 }
 
 /* Hover: lift the front card and fan the others */
 .preview-stack:hover [data-stack-pos="2"] {
-  transform: translateY(-10px) rotate(0deg);
+  transform: translate(25px, -10px) rotate(0deg);
 }
 
 .preview-stack:hover [data-stack-pos="1"] {
-  transform: rotate(6deg) translate(16px, -10px);
+  transform: translate(71px, 30px) rotate(6deg);
 }
 
 .preview-stack:hover [data-stack-pos="0"] {
-  transform: rotate(-8deg) translate(-26px, 12px);
-}
-
-/* Front card physically moves to the back with a lift arc */
-.preview-stack img.is-leaving {
-  animation: stack-leave 0.62s var(--ease-out) forwards;
-  pointer-events: none;
-}
-
-@keyframes stack-leave {
-  0% {
-    transform: rotate(0deg) translate(0, 0) scale(1);
-    z-index: 10;
-    box-shadow:
-      0 2px 6px rgba(33, 28, 22, 0.07),
-      0 16px 36px rgba(33, 28, 22, 0.12),
-      0 36px 72px rgba(33, 28, 22, 0.14);
-  }
-  50% {
-    transform: rotate(14deg) translate(60px, -100px) scale(0.92);
-    z-index: 10;
-    box-shadow:
-      0 8px 24px rgba(33, 28, 22, 0.09),
-      0 32px 64px rgba(33, 28, 22, 0.14),
-      0 64px 120px rgba(33, 28, 22, 0.18);
-  }
-  55% {
-    z-index: 1;
-  }
-  100% {
-    transform: rotate(-8deg) translate(-22px, 12px) scale(1);
-    z-index: 1;
-    box-shadow:
-      0 2px 6px rgba(33, 28, 22, 0.07),
-      0 16px 36px rgba(33, 28, 22, 0.12),
-      0 36px 72px rgba(33, 28, 22, 0.14);
-  }
+  transform: translate(-16px, 92px) rotate(-8deg);
 }
 
 .stack-hint {
@@ -520,6 +500,11 @@ ul, ol {
   text-decoration: none;
 }
 
+.btn-ghost:active,
+.btn-ai:active {
+  transform: scale(0.98);
+}
+
 .btn-lg {
   padding: 14px 28px;
   font-size: 16px;
@@ -589,7 +574,7 @@ ul, ol {
   box-shadow: var(--shadow-soft);
 }
 
-/* ---------- Templates ---------- */
+/* ---------- Template cards ---------- */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -610,8 +595,8 @@ ul, ol {
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover), 0 0 0 1px rgba(79, 70, 229, 0.08), 0 18px 44px rgba(79, 70, 229, 0.10);
   border-color: rgba(255, 255, 255, 0.75);
 }
 
@@ -642,6 +627,11 @@ ul, ol {
   height: 100%;
   object-fit: cover;
   object-position: top center;
+  transition: transform 0.5s var(--ease-out);
+}
+
+.card:hover .thumb-wrap img {
+  transform: scale(1.045);
 }
 
 .card-actions {
@@ -674,6 +664,10 @@ ul, ol {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.btn-reset[hidden] {
+  display: none;
 }
 
 .btn-reset {
@@ -1011,6 +1005,12 @@ ul, ol {
   transform: scale(1.01);
 }
 
+.ai-dropzone.has-file {
+  border-style: solid;
+  border-color: rgba(46, 158, 107, 0.35);
+  background: rgba(46, 158, 107, 0.05);
+}
+
 .ai-dropzone input[type="file"] {
   position: absolute;
   inset: 0;
@@ -1033,11 +1033,29 @@ ul, ol {
 }
 
 .ai-file-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--accent-ink);
   min-height: 18px;
   word-break: break-all;
+}
+
+.ai-file-check {
+  flex: none;
+  color: var(--success);
+  display: none;
+}
+
+.has-file .ai-file-check {
+  display: block;
+}
+
+.has-file .ai-file-name {
+  color: var(--success);
 }
 
 .ai-privacy {
@@ -1060,6 +1078,7 @@ ul, ol {
   font-weight: 500;
   line-height: 1.45;
   min-height: 20px;
+  transition: opacity 0.25s var(--ease-out);
 }
 
 .ai-status.success {
@@ -1356,11 +1375,19 @@ ul, ol {
     animation: none !important;
   }
 
+  .preview-stack img {
+    transition: none !important;
+  }
+
   .skeleton-title,
   .skeleton-text,
   .skeleton-preview,
   .ai-stepper:not([hidden]) {
     animation: none;
+  }
+
+  .ai-status {
+    transition: none;
   }
 
   .reveal {

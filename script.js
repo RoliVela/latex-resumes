@@ -171,6 +171,23 @@
       card.dataset.stackPos = String(i);
     });
 
+    // Transform-only slot geometry (must match the CSS attribute-selector
+    // rules below) — no top/left involved, so the cycle animation never
+    // touches layout.
+    const SLOT = {
+      0: { x: -12, y: 92, r: -8 }, // back
+      1: { x: 67, y: 30, r: 6 },   // middle
+      2: { x: 25, y: 0, r: 0 },    // front
+    };
+    const SHADOW_REST =
+      '0 2px 6px rgba(33, 28, 22, 0.07), 0 16px 36px rgba(33, 28, 22, 0.12), 0 36px 72px rgba(33, 28, 22, 0.14)';
+    const SHADOW_LIFT =
+      '0 10px 28px rgba(33, 28, 22, 0.12), 0 36px 72px rgba(33, 28, 22, 0.16), 0 72px 130px rgba(33, 28, 22, 0.20)';
+    const DURATION = 600;
+    const EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+    const transformFor = (slot, scale = 1) => `translate(${slot.x}px, ${slot.y}px) rotate(${slot.r}deg) scale(${scale})`;
+
     let isAnimating = false;
 
     const rotatePositions = () => {
@@ -182,48 +199,58 @@
 
     const cycle = () => {
       if (isAnimating) return;
-      isAnimating = true;
 
       const leaving = cards.find((card) => card.dataset.stackPos === '2');
-      if (!leaving) {
-        isAnimating = false;
-        return;
-      }
+      if (!leaving) return;
 
       if (reducedMotion) {
         rotatePositions();
-        isAnimating = false;
         return;
       }
 
-      // Start the front card's lift-to-back animation, then advance every
-      // card's stack slot. The keyframe animation overrides the leaving
-      // card's new base transform, so there is no flash.
-      leaving.classList.add('is-leaving');
-      rotatePositions();
+      const mid = cards.find((card) => card.dataset.stackPos === '1');
+      const back = cards.find((card) => card.dataset.stackPos === '0');
+      isAnimating = true;
 
-      let fallbackTimer = null;
+      // Lift the leaving card above the whole stack for the duration of the
+      // arc — it only drops back below the others once it has physically
+      // settled at the back, so there's no mid-flight stacking-order pop.
+      leaving.style.zIndex = '10';
 
-      const cleanup = () => {
-        leaving.removeEventListener('animationend', onEnd);
-        if (fallbackTimer) clearTimeout(fallbackTimer);
-        // Disable the transform transition for the instant the animation
-        // class is removed. The animation's final keyframe already matches
-        // the back position, so this keeps the settle perfectly still.
-        leaving.style.transition = 'none';
-        leaving.classList.remove('is-leaving');
-        void leaving.offsetWidth;
-        leaving.style.transition = '';
+      const liftAnim = leaving.animate(
+        [
+          { transform: transformFor(SLOT[2]), boxShadow: SHADOW_REST, offset: 0 },
+          {
+            transform: `translate(${SLOT[2].x + 60}px, -100px) rotate(14deg) scale(0.92)`,
+            boxShadow: SHADOW_LIFT,
+            offset: 0.5,
+          },
+          { transform: transformFor(SLOT[0]), boxShadow: SHADOW_REST, offset: 1 },
+        ],
+        { duration: DURATION, easing: EASING, fill: 'forwards' }
+      );
+
+      const midAnim = mid.animate(
+        [{ transform: transformFor(SLOT[1]) }, { transform: transformFor(SLOT[2]) }],
+        { duration: DURATION, easing: EASING, fill: 'forwards' }
+      );
+
+      const backAnim = back.animate(
+        [{ transform: transformFor(SLOT[0]) }, { transform: transformFor(SLOT[1]) }],
+        { duration: DURATION, easing: EASING, fill: 'forwards' }
+      );
+
+      const settle = () => {
+        // Advance the underlying stack-position attributes to match where
+        // the animations landed, then cancel the animations so the CSS
+        // rules (already matching) take back over with no visual jump.
+        rotatePositions();
+        [liftAnim, midAnim, backAnim].forEach((anim) => anim.cancel());
+        leaving.style.zIndex = '';
         isAnimating = false;
       };
 
-      const onEnd = (evt) => {
-        if (evt.target !== leaving) return;
-        cleanup();
-      };
-
-      leaving.addEventListener('animationend', onEnd);
-      fallbackTimer = setTimeout(cleanup, 1000);
+      Promise.all([liftAnim.finished, midAnim.finished, backAnim.finished]).then(settle, settle);
     };
 
     const handleActivate = (evt) => {
@@ -394,7 +421,7 @@
   const aiTemplateName = document.getElementById('ai-template-name');
   const aiDropzone = document.getElementById('ai-dropzone');
   const aiFileInput = document.getElementById('ai-file-input');
-  const aiFileName = document.getElementById('ai-file-name');
+  const aiFileNameText = document.getElementById('ai-file-name-text');
   const aiStatus = document.getElementById('ai-status');
   const aiStepper = document.getElementById('ai-stepper');
   const aiGenerate = document.getElementById('ai-generate');
@@ -403,6 +430,48 @@
     if (!aiStatus) return;
     aiStatus.textContent = text;
     aiStatus.className = `ai-status ${type}`;
+    aiStatus.style.opacity = '';
+  }
+
+  const REASSURANCE_MESSAGES = [
+    'Understanding your experience…',
+    'Matching it to the template…',
+    'Structuring your sections…',
+    'Writing clean LaTeX…',
+    'Polishing the formatting…',
+    'Almost there…',
+  ];
+  const REASSURANCE_INTERVAL_MS = 2500;
+  const REASSURANCE_FADE_MS = 250;
+  let reassuranceTimer = null;
+
+  function startReassurance() {
+    stopReassurance();
+    let i = 0;
+    setAiStatus(REASSURANCE_MESSAGES[0], 'loading');
+
+    reassuranceTimer = setInterval(() => {
+      i = (i + 1) % REASSURANCE_MESSAGES.length;
+      if (!aiStatus) return;
+      if (reducedMotion) {
+        setAiStatus(REASSURANCE_MESSAGES[i], 'loading');
+        return;
+      }
+      aiStatus.style.opacity = '0';
+      setTimeout(() => {
+        if (!reassuranceTimer) return; // stopped mid-fade
+        aiStatus.textContent = REASSURANCE_MESSAGES[i];
+        aiStatus.style.opacity = '1';
+      }, REASSURANCE_FADE_MS);
+    }, REASSURANCE_INTERVAL_MS);
+  }
+
+  function stopReassurance() {
+    if (reassuranceTimer) {
+      clearInterval(reassuranceTimer);
+      reassuranceTimer = null;
+    }
+    if (aiStatus) aiStatus.style.opacity = '';
   }
 
   function showStepper() {
@@ -515,6 +584,19 @@
     return text.slice(0, max);
   }
 
+  function setSelectedFile(file) {
+    currentFile = file;
+    if (aiFileNameText) aiFileNameText.textContent = file.name;
+    if (aiDropzone) aiDropzone.classList.add('has-file');
+    setAiStatus('');
+    updateGenerateButton();
+  }
+
+  function clearSelectedFile() {
+    if (aiFileNameText) aiFileNameText.textContent = '';
+    if (aiDropzone) aiDropzone.classList.remove('has-file');
+  }
+
   function openAiModal(key) {
     if (!aiModal) return;
     currentAutofillKey = key;
@@ -524,7 +606,7 @@
     if (aiTemplateName) {
       aiTemplateName.textContent = TEMPLATES[key]?.title || '';
     }
-    if (aiFileName) aiFileName.textContent = '';
+    clearSelectedFile();
     setAiStatus('');
     hideStepper();
     if (currentAutofillKey) hideCardSkeleton(currentAutofillKey);
@@ -550,6 +632,7 @@
 
   function closeAiModal() {
     if (!aiModal) return;
+    stopReassurance();
     if (currentAutofillKey) hideCardSkeleton(currentAutofillKey);
     aiModal.classList.remove('open');
     aiModal.querySelector('.modal-panel')?.classList.remove('shake');
@@ -622,7 +705,7 @@
 
     resumeText = truncateText(resumeText, MAX_RESUME_CHARS);
     setStepperStep(1);
-    setAiStatus('Building your LaTeX…', 'loading');
+    startReassurance();
 
     try {
       const response = await fetch('/api/generate', {
@@ -636,6 +719,7 @@
       });
 
       const data = await response.json().catch(() => ({}));
+      stopReassurance();
 
       if (!response.ok) {
         const message = data.message || data.error || 'The AI is busy — please try again.';
@@ -670,6 +754,7 @@
       }, 800);
     } catch (err) {
       console.error('Generate error:', err);
+      stopReassurance();
       markStepperError();
       hideCardSkeleton(currentAutofillKey);
       setAiStatus('The AI is busy — please try again.', 'error');
@@ -712,19 +797,13 @@
 
       aiDropzone.addEventListener('drop', (evt) => {
         if (evt.dataTransfer.files && evt.dataTransfer.files[0]) {
-          currentFile = evt.dataTransfer.files[0];
-          aiFileName.textContent = currentFile.name;
-          setAiStatus('');
-          updateGenerateButton();
+          setSelectedFile(evt.dataTransfer.files[0]);
         }
       });
 
       aiFileInput.addEventListener('change', (evt) => {
         if (evt.target.files && evt.target.files[0]) {
-          currentFile = evt.target.files[0];
-          aiFileName.textContent = currentFile.name;
-          setAiStatus('');
-          updateGenerateButton();
+          setSelectedFile(evt.target.files[0]);
         }
       });
     }
