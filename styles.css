@@ -598,6 +598,7 @@ ul, ol {
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 32px;
@@ -644,8 +645,8 @@ ul, ol {
 }
 
 .card-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-top: auto;
   padding-top: 24px;
@@ -657,7 +658,6 @@ ul, ol {
 }
 
 .btn-ai {
-  grid-column: 1 / -1;
   background: rgba(79, 70, 229, 0.08);
   color: var(--accent-ink);
   border-color: rgba(79, 70, 229, 0.25);
@@ -677,7 +677,6 @@ ul, ol {
 }
 
 .btn-reset {
-  grid-column: 1 / -1;
   background: transparent;
   color: var(--text-faint);
   border-color: transparent;
@@ -713,6 +712,58 @@ ul, ol {
   border-radius: 50%;
   background: var(--success);
   box-shadow: 0 0 0 2px var(--surface-solid);
+}
+
+/* Card skeleton/shimmer loading state */
+.card-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.card-skeleton[hidden] {
+  display: none;
+}
+
+.skeleton-title,
+.skeleton-text,
+.skeleton-preview {
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--bg-2) 25%, var(--surface-solid) 50%, var(--bg-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+.skeleton-title {
+  width: 70%;
+  height: 22px;
+}
+
+.skeleton-text {
+  width: 100%;
+  height: 14px;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-preview {
+  margin-top: 12px;
+  height: 180px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ---------- Support ---------- */
@@ -1024,6 +1075,11 @@ ul, ol {
   border: 1px solid var(--border-hair);
 }
 
+.ai-stepper[hidden],
+.ai-stepper.is-hidden {
+  display: none !important;
+}
+
 .ai-step {
   display: flex;
   flex-direction: column;
@@ -1098,8 +1154,18 @@ ul, ol {
   color: var(--text-soft);
 }
 
-.ai-stepper:has(.ai-step.done) .ai-step-connector,
-.ai-stepper:has(.ai-step[data-step="1"].active) .ai-step-connector {
+.ai-step.error .ai-step-marker {
+  background: #C43B3B;
+  border-color: transparent;
+  color: #fff;
+}
+
+.ai-step.error .ai-step-label {
+  color: #C43B3B;
+  font-weight: 600;
+}
+
+.ai-stepper[data-active="1"] .ai-step-connector {
   background: var(--accent-grad);
 }
 
@@ -1252,6 +1318,12 @@ ul, ol {
     animation: none !important;
   }
 
+  .skeleton-title,
+  .skeleton-text,
+  .skeleton-preview {
+    animation: none;
+  }
+
   .reveal {
     opacity: 1;
     transform: none;
@@ -1315,10 +1387,6 @@ ul, ol {
   }
 
   .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .card-actions {
     grid-template-columns: 1fr;
   }
 

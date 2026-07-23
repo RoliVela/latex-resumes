@@ -319,6 +319,22 @@
     return copyBtn.closest('.template-card');
   }
 
+  function showCardSkeleton(key) {
+    const card = findCardForTemplate(key);
+    if (!card) return;
+    card.setAttribute('aria-busy', 'true');
+    const skeleton = card.querySelector('.card-skeleton');
+    if (skeleton) skeleton.hidden = false;
+  }
+
+  function hideCardSkeleton(key) {
+    const card = findCardForTemplate(key);
+    if (!card) return;
+    card.removeAttribute('aria-busy');
+    const skeleton = card.querySelector('.card-skeleton');
+    if (skeleton) skeleton.hidden = true;
+  }
+
   function setCustomState(key, latex) {
     customTex[key] = latex;
     const card = findCardForTemplate(key);
@@ -392,25 +408,39 @@
   function showStepper() {
     if (!aiStepper) return;
     aiStepper.hidden = false;
+    aiStepper.classList.remove('is-hidden');
     setStepperStep(0);
   }
 
   function hideStepper() {
     if (!aiStepper) return;
     aiStepper.hidden = true;
+    aiStepper.classList.add('is-hidden');
   }
 
   function setStepperStep(stepIndex) {
     if (!aiStepper) return;
+    aiStepper.dataset.active = String(stepIndex);
     aiStepper.querySelectorAll('.ai-step').forEach((step) => {
       const idx = Number(step.dataset.step);
-      step.classList.remove('active', 'done');
+      step.classList.remove('active', 'done', 'error');
       step.removeAttribute('aria-current');
       if (idx < stepIndex) {
         step.classList.add('done');
       } else if (idx === stepIndex) {
         step.classList.add('active');
         step.setAttribute('aria-current', 'step');
+      }
+    });
+  }
+
+  function markStepperError() {
+    if (!aiStepper) return;
+    aiStepper.querySelectorAll('.ai-step').forEach((step) => {
+      if (step.classList.contains('active')) {
+        step.classList.remove('active', 'done');
+        step.classList.add('error');
+        step.removeAttribute('aria-current');
       }
     });
   }
@@ -494,6 +524,7 @@
     if (aiFileName) aiFileName.textContent = '';
     setAiStatus('');
     hideStepper();
+    if (currentAutofillKey) hideCardSkeleton(currentAutofillKey);
     if (aiFileInput) aiFileInput.value = '';
     updateGenerateButton();
 
@@ -516,6 +547,7 @@
 
   function closeAiModal() {
     if (!aiModal) return;
+    if (currentAutofillKey) hideCardSkeleton(currentAutofillKey);
     aiModal.classList.remove('open');
     document.body.style.overflow = '';
     setTimeout(() => {
@@ -543,6 +575,7 @@
 
     aiGenerate.disabled = true;
     showStepper();
+    showCardSkeleton(currentAutofillKey);
     setAiStatus('Reading your résumé…', 'loading');
 
     let resumeText = '';
@@ -551,13 +584,16 @@
     } catch (err) {
       console.error('Extraction error:', err);
       setAiStatus('We couldn\'t read text from this file — try a text-based PDF, a DOCX, or paste your info.', 'error');
+      markStepperError();
+      hideCardSkeleton(currentAutofillKey);
       aiGenerate.disabled = false;
       return;
     }
 
     if (!resumeText.trim()) {
       setAiStatus('We couldn\'t read text from this file — try a text-based PDF, a DOCX, or paste your info.', 'error');
-      hideStepper();
+      markStepperError();
+      hideCardSkeleton(currentAutofillKey);
       aiGenerate.disabled = false;
       return;
     }
@@ -581,7 +617,8 @@
 
       if (!response.ok) {
         const message = data.message || data.error || 'The AI is busy — please try again.';
-        hideStepper();
+        markStepperError();
+        hideCardSkeleton(currentAutofillKey);
         if (response.status === 429) {
           setAiStatus('You\'ve hit today\'s free limit — try again tomorrow.', 'error');
         } else if (response.status === 403) {
@@ -594,7 +631,8 @@
       }
 
       if (!data.latex) {
-        hideStepper();
+        markStepperError();
+        hideCardSkeleton(currentAutofillKey);
         setAiStatus('The AI returned an empty response — please try again.', 'error');
         aiGenerate.disabled = false;
         return;
@@ -602,17 +640,21 @@
 
       setCustomState(currentAutofillKey, data.latex);
       hideStepper();
+      hideCardSkeleton(currentAutofillKey);
       setAiStatus('Your custom LaTeX is ready!', 'success');
       setTimeout(closeAiModal, 600);
     } catch (err) {
       console.error('Generate error:', err);
-      hideStepper();
+      markStepperError();
+      hideCardSkeleton(currentAutofillKey);
       setAiStatus('The AI is busy — please try again.', 'error');
       aiGenerate.disabled = false;
     }
   }
 
   function initAutofill() {
+    hideStepper();
+
     $$('.btn-autofill').forEach((btn) => {
       btn.addEventListener('click', () => openAiModal(btn.dataset.autofill));
     });
