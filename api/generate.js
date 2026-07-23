@@ -5,6 +5,7 @@
 */
 
 const { createHash } = require('crypto');
+const TEMPLATES = require('./templates');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
@@ -140,8 +141,7 @@ async function verifyTurnstile(token) {
 // Load template
 // ---------------------------------------------------------------------------
 function loadTemplate(key) {
-  const path = join(__dirname, '..', 'assets', 'templates', `${key}.tex`);
-  return readFileSync(path, 'utf-8');
+  return TEMPLATES[key];
 }
 
 // ---------------------------------------------------------------------------
