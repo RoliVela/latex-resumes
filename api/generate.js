@@ -6,8 +6,6 @@
 
 const { createHash } = require('crypto');
 const TEMPLATES = require('./templates');
-const { readFileSync } = require('fs');
-const { join } = require('path');
 
 // ---------------------------------------------------------------------------
 // Config

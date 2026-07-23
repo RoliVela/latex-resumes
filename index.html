@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -60,6 +61,7 @@
       <div class="container">
         <div class="panel glass reveal">
           <h2 id="how-to-title" class="section-title">How to use these in Overleaf</h2>
+          <p class="how-to-lead">Two ways to start: copy a template's code, <strong>or</strong> click <strong>Autofill with AI</strong> on any template to upload your résumé and get the code filled in automatically. Then, in Overleaf:</p>
           <ol class="steps">
             <li class="step" data-stagger="0">
               <span class="step-chip glass">1</span>
@@ -71,7 +73,7 @@
             </li>
             <li class="step" data-stagger="160">
               <span class="step-chip glass">3</span>
-              <span><strong>Paste in the template code</strong> copied from a card below.</span>
+              <span><strong>Paste your code</strong> — the blank template, or your AI-filled version.</span>
             </li>
             <li class="step" data-stagger="240">
               <span class="step-chip glass">4</span>
@@ -79,11 +81,11 @@
             </li>
             <li class="step" data-stagger="320">
               <span class="step-chip glass">5</span>
-              <span><strong>Edit in the visual editor</strong> — replace the bracketed placeholders with your info. No coding needed.</span>
+              <span><strong>Edit in the visual editor</strong> — tweak or replace any details. No coding needed.</span>
             </li>
             <li class="step" data-stagger="400">
               <span class="step-chip glass">6</span>
-              <span><strong>Download your PDF</strong> using the download button at the top left when it looks right.</span>
+              <span><strong>Download your PDF</strong> with the download button at the top left.</span>
             </li>
           </ol>
         </div>
@@ -158,31 +160,13 @@
       </div>
     </section>
 
-    <section id="how-it-works" class="section how-it-works" aria-labelledby="how-it-works-title">
-      <div class="container">
-        <div class="panel glass how-it-works-panel reveal">
-          <h2 id="how-it-works-title" class="section-title">How this site works</h2>
-          <p class="section-intro">This is a small, hand-built project for sharing LaTeX résumé templates. LaTeX is a typesetting language that produces clean, consistently formatted PDFs that applicant tracking systems parse reliably. Preview any of the three templates, copy its code straight into Overleaf, or upload your own résumé and let AI fill the template in with your information — then finish it in Overleaf in a few minutes.</p>
-          <h3 class="how-it-works-subtitle">Built with</h3>
-          <ul class="built-with-list">
-            <li><strong>Front end:</strong> hand-written HTML, CSS &amp; JavaScript — no frameworks</li>
-            <li><strong>Résumés:</strong> LaTeX, edited in Overleaf</li>
-            <li><strong>AI autofill:</strong> pdf.js &amp; mammoth.js (reads your file in the browser) + an NVIDIA Llama model via a Vercel serverless function, protected by Cloudflare Turnstile</li>
-            <li><strong>Feedback:</strong> EmailJS</li>
-            <li><strong>Visitor counter:</strong> CounterAPI</li>
-            <li><strong>Hosting &amp; code:</strong> Vercel, version-controlled with Git &amp; GitHub</li>
-          </ul>
-          <p class="how-it-works-footer">Built by Roli Vela</p>
-        </div>
-      </div>
-    </section>
-
     <section id="feedback" class="section feedback" aria-labelledby="feedback-title">
       <div class="container">
-        <div class="panel glass feedback-panel reveal">
-          <h2 id="feedback-title" class="section-title">Send feedback</h2>
-          <p class="section-intro">Found a bug, have a suggestion, or just want to say hi? Send it my way.</p>
-          <form id="feedback-form" class="feedback-form" novalidate>
+        <div class="feedback-combo reveal">
+          <div class="panel glass feedback-panel">
+            <h2 id="feedback-title" class="section-title">Send feedback</h2>
+            <p class="section-intro">Found a bug, have a suggestion, or just want to say hi? Send it my way.</p>
+            <form id="feedback-form" class="feedback-form" novalidate>
             <!--
               EmailJS template variables (template_jsji0pk) must match the input name= attributes below.
               from_name → {{from_name}}
@@ -209,6 +193,19 @@
               <div id="form-status" class="form-status" aria-live="polite"></div>
             </div>
           </form>
+        </div>
+          <aside class="panel glass built-with-panel" aria-labelledby="built-with-title">
+            <h3 id="built-with-title" class="built-with-title">Built with</h3>
+            <ul class="built-with-list compact">
+              <li><strong>Front end:</strong> hand-written HTML, CSS &amp; JavaScript — no frameworks</li>
+              <li><strong>Résumés:</strong> LaTeX, edited in Overleaf</li>
+              <li><strong>AI autofill:</strong> pdf.js &amp; mammoth.js (reads your file in the browser) + an NVIDIA Llama model via a Vercel serverless function, protected by Cloudflare Turnstile</li>
+              <li><strong>Feedback:</strong> EmailJS</li>
+              <li><strong>Visitor counter:</strong> CounterAPI</li>
+              <li><strong>Hosting &amp; code:</strong> Vercel, version-controlled with Git &amp; GitHub</li>
+            </ul>
+            <p class="built-with-footer">Built by Roli Vela</p>
+          </aside>
         </div>
       </div>
     </section>
@@ -264,6 +261,23 @@
         </div>
         <p class="ai-privacy">Your file is processed once to generate LaTeX and is not stored.</p>
         <div id="ai-turnstile" class="cf-turnstile" data-sitekey="0x4AAAAAAD8Nde1BEHFDEtEB" data-callback="turnstileSuccess" data-theme="light" aria-label="Security verification"></div>
+        <div id="ai-stepper" class="ai-stepper" aria-label="Progress" hidden>
+          <div class="ai-step active" data-step="0">
+            <div class="ai-step-marker">
+              <span class="ai-step-number">1</span>
+              <svg class="ai-step-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <span class="ai-step-label">Read résumé</span>
+          </div>
+          <div class="ai-step-connector" aria-hidden="true"></div>
+          <div class="ai-step" data-step="1">
+            <div class="ai-step-marker">
+              <span class="ai-step-number">2</span>
+              <svg class="ai-step-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <span class="ai-step-label">Generate LaTeX</span>
+          </div>
+        </div>
         <div id="ai-status" class="ai-status" aria-live="polite"></div>
         <div class="ai-actions">
           <button id="ai-generate" class="btn btn-primary" type="button" disabled>Generate</button>

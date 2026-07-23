@@ -163,27 +163,70 @@
     const stack = $('.preview-stack');
     if (!stack) return;
 
-    const cycle = () => {
-      const front = stack.querySelector('img:last-child');
-      if (!front) return;
+    const cards = Array.from(stack.querySelectorAll('img'));
+    if (cards.length !== 3) return;
 
-      if (reducedMotion) {
-        stack.insertBefore(front, stack.firstElementChild);
+    // Initialize positions: 0 = back, 1 = middle, 2 = front.
+    cards.forEach((card, i) => {
+      card.dataset.stackPos = String(i);
+    });
+
+    let isAnimating = false;
+
+    const rotatePositions = () => {
+      cards.forEach((card) => {
+        const current = Number(card.dataset.stackPos);
+        card.dataset.stackPos = String((current + 1) % 3);
+      });
+    };
+
+    const cycle = () => {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      const leaving = cards.find((card) => card.dataset.stackPos === '2');
+      if (!leaving) {
+        isAnimating = false;
         return;
       }
 
-      front.classList.add('leaving');
-      stack.classList.add('cycling');
+      if (reducedMotion) {
+        rotatePositions();
+        isAnimating = false;
+        return;
+      }
 
-      setTimeout(() => {
-        front.classList.remove('leaving');
-        stack.classList.remove('cycling');
-        stack.insertBefore(front, stack.firstElementChild);
-      }, 550);
+      // Start the front card's lift-to-back animation, then advance every
+      // card's stack slot. The keyframe animation overrides the leaving
+      // card's new base transform, so there is no flash.
+      leaving.classList.add('is-leaving');
+      rotatePositions();
+
+      let fallbackTimer = null;
+
+      const cleanup = () => {
+        leaving.removeEventListener('animationend', onEnd);
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+        // Disable the transform transition for the instant the animation
+        // class is removed. The animation's final keyframe already matches
+        // the back position, so this keeps the settle perfectly still.
+        leaving.style.transition = 'none';
+        leaving.classList.remove('is-leaving');
+        void leaving.offsetWidth;
+        leaving.style.transition = '';
+        isAnimating = false;
+      };
+
+      const onEnd = (evt) => {
+        if (evt.target !== leaving) return;
+        cleanup();
+      };
+
+      leaving.addEventListener('animationend', onEnd);
+      fallbackTimer = setTimeout(cleanup, 1000);
     };
 
     const handleActivate = (evt) => {
-      // Ignore if the user is selecting text or dragging.
       if (evt.type === 'keydown' && evt.key !== 'Enter' && evt.key !== ' ') return;
       if (evt.type === 'keydown') evt.preventDefault();
       cycle();
@@ -337,12 +380,39 @@
   const aiFileInput = document.getElementById('ai-file-input');
   const aiFileName = document.getElementById('ai-file-name');
   const aiStatus = document.getElementById('ai-status');
+  const aiStepper = document.getElementById('ai-stepper');
   const aiGenerate = document.getElementById('ai-generate');
 
   function setAiStatus(text, type = '') {
     if (!aiStatus) return;
     aiStatus.textContent = text;
     aiStatus.className = `ai-status ${type}`;
+  }
+
+  function showStepper() {
+    if (!aiStepper) return;
+    aiStepper.hidden = false;
+    setStepperStep(0);
+  }
+
+  function hideStepper() {
+    if (!aiStepper) return;
+    aiStepper.hidden = true;
+  }
+
+  function setStepperStep(stepIndex) {
+    if (!aiStepper) return;
+    aiStepper.querySelectorAll('.ai-step').forEach((step) => {
+      const idx = Number(step.dataset.step);
+      step.classList.remove('active', 'done');
+      step.removeAttribute('aria-current');
+      if (idx < stepIndex) {
+        step.classList.add('done');
+      } else if (idx === stepIndex) {
+        step.classList.add('active');
+        step.setAttribute('aria-current', 'step');
+      }
+    });
   }
 
   function isAllowedFile(file) {
@@ -423,6 +493,7 @@
     }
     if (aiFileName) aiFileName.textContent = '';
     setAiStatus('');
+    hideStepper();
     if (aiFileInput) aiFileInput.value = '';
     updateGenerateButton();
 
@@ -471,6 +542,7 @@
     }
 
     aiGenerate.disabled = true;
+    showStepper();
     setAiStatus('Reading your résumé…', 'loading');
 
     let resumeText = '';
@@ -485,11 +557,13 @@
 
     if (!resumeText.trim()) {
       setAiStatus('We couldn\'t read text from this file — try a text-based PDF, a DOCX, or paste your info.', 'error');
+      hideStepper();
       aiGenerate.disabled = false;
       return;
     }
 
     resumeText = truncateText(resumeText, MAX_RESUME_CHARS);
+    setStepperStep(1);
     setAiStatus('Building your LaTeX…', 'loading');
 
     try {
@@ -507,6 +581,7 @@
 
       if (!response.ok) {
         const message = data.message || data.error || 'The AI is busy — please try again.';
+        hideStepper();
         if (response.status === 429) {
           setAiStatus('You\'ve hit today\'s free limit — try again tomorrow.', 'error');
         } else if (response.status === 403) {
@@ -519,16 +594,19 @@
       }
 
       if (!data.latex) {
+        hideStepper();
         setAiStatus('The AI returned an empty response — please try again.', 'error');
         aiGenerate.disabled = false;
         return;
       }
 
       setCustomState(currentAutofillKey, data.latex);
+      hideStepper();
       setAiStatus('Your custom LaTeX is ready!', 'success');
       setTimeout(closeAiModal, 600);
     } catch (err) {
       console.error('Generate error:', err);
+      hideStepper();
       setAiStatus('The AI is busy — please try again.', 'error');
       aiGenerate.disabled = false;
     }
