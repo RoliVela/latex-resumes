@@ -10,8 +10,8 @@ const TEMPLATES = require('./templates');
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const MODEL = process.env.NVIDIA_MODEL || 'nvidia/llama-3.1-nemotron-70b-instruct';
-const FALLBACK_MODEL = 'meta/llama-3.3-70b-instruct';
+const MODEL = process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct';
+const FALLBACK_MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct';
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const MAX_RESUME_CHARS = 15000;
 const RATE_LIMIT = 5;
@@ -290,26 +290,28 @@ module.exports = async function handler(req, res) {
     },
   ];
 
-  try {
-    let rawLatex = await callNvidia(messages, 0);
-    let latex = sanitizeLatex(rawLatex);
-
-    if (!latex) {
-      // Try fallback model once if first attempt failed sanitization
-      rawLatex = await callNvidia(messages, 1);
+  let latex = null;
+  let lastError = null;
+  for (let attempt = 0; attempt <= 1 && !latex; attempt++) {
+    try {
+      const rawLatex = await callNvidia(messages, attempt);
       latex = sanitizeLatex(rawLatex);
+      if (!latex) lastError = new Error('model output was not valid LaTeX');
+    } catch (err) {
+      lastError = err;
+      console.error(`NVIDIA attempt ${attempt} failed:`, err.message);
     }
+  }
 
-    if (!latex) {
-      res.status(502).json({ message: 'The AI returned an invalid response. Please try again.' });
-      return;
-    }
+  Object.entries(withCorsHeaders({}, origin)).forEach(([k, v]) => res.setHeader(k, v));
+  res.setHeader('Content-Type', 'application/json');
 
-    res.setHeader('Content-Type', 'application/json');
-    Object.entries(withCorsHeaders({}, origin)).forEach(([k, v]) => res.setHeader(k, v));
+  if (latex) {
     res.status(200).json({ latex });
-  } catch (err) {
-    console.error('NVIDIA request error:', err.message);
-    res.status(502).json({ message: 'The AI is busy — please try again.' });
+  } else {
+    // TEMP DEBUG: surface the real upstream reason so the failure can be diagnosed.
+    const reason = String((lastError && lastError.message) || 'unknown').slice(0, 300);
+    console.error('Generation failed:', reason);
+    res.status(502).json({ message: 'AI error: ' + reason });
   }
 }

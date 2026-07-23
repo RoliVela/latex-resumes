@@ -578,6 +578,14 @@
     aiGenerate.disabled = !valid;
   }
 
+  function refreshTurnstile() {
+    currentTurnstileToken = null;
+    if (window.turnstile && aiModal && aiModal.querySelector('.cf-turnstile')) {
+      try { window.turnstile.reset(aiModal.querySelector('.cf-turnstile')); } catch (e) {}
+    }
+    updateGenerateButton();
+  }
+
   async function handleGenerate() {
     if (!currentAutofillKey || !currentFile) return;
 
@@ -640,7 +648,7 @@
         } else {
           setAiStatus(message, 'error');
         }
-        aiGenerate.disabled = false;
+        refreshTurnstile();
         return;
       }
 
@@ -648,7 +656,7 @@
         markStepperError();
         hideCardSkeleton(currentAutofillKey);
         setAiStatus('The AI returned an empty response — please try again.', 'error');
-        aiGenerate.disabled = false;
+        refreshTurnstile();
         return;
       }
 
@@ -665,7 +673,7 @@
       markStepperError();
       hideCardSkeleton(currentAutofillKey);
       setAiStatus('The AI is busy — please try again.', 'error');
-      aiGenerate.disabled = false;
+      refreshTurnstile();
     }
   }
 
