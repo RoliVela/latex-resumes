@@ -1,0 +1,136 @@
+%-------------------- Roli Vela Undergraduate Resume Template --------------------%
+\documentclass[10pt,letterpaper]{article}
+
+%---------- Packages ----------%
+\usepackage[margin=0.55in]{geometry}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tabularx}
+
+%---------- Formatting ----------%
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{leftmargin=1.2em,itemsep=0.5pt,topsep=0pt,parsep=0pt,partopsep=0pt}
+\renewcommand\labelitemi{\textbullet}
+
+%---------- Section Formatting ----------%
+\titleformat{\section}
+{\bfseries\large}
+{}
+{0pt}
+{}
+[\vspace{1pt}\titlerule]
+
+\titlespacing*{\section}{0pt}{4pt plus 1pt minus 1pt}{8pt}
+
+%---------- Entry Helpers ----------%
+\newenvironment{resumeentry}[2]{%
+\vspace{1pt}\textbf{#1}\hfill {\small #2}\par
+}{\vspace{0pt}}
+
+\newenvironment{resumeentrywide}[4]{%
+\vspace{1pt}\textbf{#1}\hfill {\small #2}\par
+\textit{#3}\hfill {\small #4}\par
+}{\vspace{0pt}}
+
+%---------- Document ----------%
+\begin{document}
+\pagestyle{empty}
+
+%==================== HEADER ====================%
+\noindent
+{\Large \textsc{\textbf{[YOUR NAME]}}} \hfill [CITY, STATE] \textbar{} [PHONE NUMBER] \textbar{} \href{https://github.com/yourusername}{github.com/yourusername}\par
+\vspace{2pt}
+[Your Title] \textbar{} [Your Focus Area] \hfill \href{mailto:your.email@university.edu}{your.email@university.edu} \textbar{} \href{https://www.linkedin.com/in/yourusername}{linkedin.com/in/yourusername}
+\vspace{8pt}
+
+%==================== EDUCATION ====================%
+\section*{EDUCATION}
+\begin{resumeentry}{[UNIVERSITY NAME], [CITY, STATE]}{Anticipated [MONTH YEAR]}\end{resumeentry}
+\textit{Bachelor of Science in [YOUR MAJOR] | [OPTIONAL MINOR/TRACK]} \hfill \textbf{GPA: [WRITE GPA HERE]}
+
+%==================== SKILLS ====================%
+\section*{SKILLS}
+\textbf{Technical:} [Skill 1], [Skill 2], [Skill 3], [Skill 4], [Skill 5] \\
+\textbf{Software:} [Language 1], [Language 2], [Software/IDE 1], [Software/IDE 2], [Languages spoken]
+
+%==================== EXPERIENCE ====================%
+\section*{WORK EXPERIENCE}
+
+\begin{resumeentrywide}
+{[Your Title/Founder Status]}{[City, State]}
+{[Company/Enterprise Type]}{[Start Date] – [End Date / Present]}
+\end{resumeentrywide}
+\begin{itemize}
+\item 
+\item 
+\item 
+\item 
+\end{itemize}
+\vspace{6pt}
+
+\begin{resumeentrywide}
+{[Company Name]}{[City, State]}
+{[Your Internship Title]}{[Start Date] – [End Date]}
+\end{resumeentrywide}
+\begin{itemize}
+\item 
+\item 
+\item 
+\end{itemize}
+\vspace{6pt}
+
+\textbf{[Company/Center Name]} — \textit{[Your Job Title]} \hfill {\small [Start Date] – [End Date]}
+\vspace{6pt}
+
+%==================== PROJECTS ====================%
+\section*{PROJECT EXPERIENCE}
+
+\begin{resumeentrywide}
+{[Project Description/Title]}{[City, State]}
+{[Your Role]}{[Start Date] – [End Date / Present]}
+\end{resumeentrywide}
+\begin{itemize}
+    \item 
+    \item 
+\end{itemize}
+\vspace{6pt}
+
+\begin{resumeentrywide}
+{[Club/Team Name]}{[City, State]}
+{[Your Role/Title]}{[Start Date] – [End Date / Present]}
+\end{resumeentrywide}
+\begin{itemize}
+    \item 
+    \item 
+\end{itemize}
+\vspace{6pt}
+
+\begin{resumeentrywide}
+{[Project Name]}{[City, State]}
+{[Academic Department / Program]}{[Start Date] – [End Date / Present]}
+\end{resumeentrywide}
+\begin{itemize}
+    \item 
+    \item 
+\end{itemize}
+\vspace{6pt}
+
+%==================== LEADERSHIP & AWARDS ====================%
+\section*{LEADERSHIP \& AWARDS}
+
+\textbf{[Fraternity/Greek/Campus Association Name]} — \textit{[Your Chair/Officer Title]} \hfill {\small [Start Date] – [End Date / Present]}
+
+\vspace{2pt}
+\textbf{[Professional/Student Organization Name]} — \textit{[Your Officer Title]}\hfill {\small [Start Date] – [End Date / Present]}
+
+\vspace{2pt}
+\textbf{[Club/Team Name]} — \textit{[Your Leadership Title]} \hfill {\small [Start Date] – [End Date / Present]}
+
+\vspace{2pt}
+\textbf{Awards:} [Award/Scholarship 1], [Award/Scholarship 2], and [Award/Scholarship 3]
+
+\end{document}

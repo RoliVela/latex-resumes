@@ -1,0 +1,118 @@
+%-------------------- Generic Anonymous Resume Template --------------------%
+\documentclass[10pt,letterpaper]{article}
+%---------- Packages ----------%
+\usepackage[margin=0.55in]{geometry}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tabularx}
+%---------- Formatting ----------%
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{leftmargin=1.2em,itemsep=0.5pt,topsep=0pt,parsep=0pt,partopsep=0pt}
+\renewcommand\labelitemi{\textbullet}
+%---------- Section Formatting ----------%
+\newcommand{\titrule}{\rule[0.5ex]{\linewidth}{1pt}}
+\titleformat{\section}
+{\bfseries\large}
+{}
+{0pt}
+{}
+[\vspace{1pt}\titrule]
+\titlespacing*{\section}{0pt}{4pt plus 1pt minus 1pt}{8pt}
+%---------- Entry Helpers ----------%
+\newenvironment{resumeentry}[2]{%
+\vspace{1pt}\textbf{#1}\hfill {\small #2}\par
+}{\vspace{0pt}}
+\newenvironment{resumeentrywide}[4]{%
+\vspace{1pt}\textbf{#1}\hfill {\small #2}\par
+\textit{#3}\hfill {\small #4}\par
+}{\vspace{0pt}}
+%---------- Document ----------%
+\begin{document}
+\pagestyle{empty}
+%==================== HEADER ====================%
+\begin{center}
+{\Large \textbf{[YOUR NAME]}}\\[-1pt]
+[CITY, STATE] • [PHONE NUMBER] • 
+\href{mailto:your.email@university.edu}{your.email@university.edu} • 
+\href{https://www.linkedin.com/in/yourusername}{linkedin.com/in/yourusername}
+\end{center}
+\vspace{-6pt}
+%==================== EDUCATION ====================%
+\section*{EDUCATION}
+\begin{resumeentry}{[UNIVERSITY NAME], [CITY, STATE]}{Anticipated [MONTH YEAR]}\end{resumeentry}
+\textit{Bachelor of Science in [YOUR MAJOR] | [OPTIONAL MINOR/TRACK]} \hfill \textbf{GPA: [WRITE GPA HERE]}
+%==================== SKILLS ====================%
+\section*{SKILLS}
+\textbf{Technical:} [Skill 1], [Skill 2], [Skill 3], [Skill 4], [Skill 5], Prototyping \\
+\textbf{Software:} [Language 1], [Language 2], [Software/IDE 1], [Software/IDE 2], [Languages spoken]
+%==================== EXPERIENCE ====================%
+\section*{WORK EXPERIENCE}
+\begin{resumeentrywide}
+{[Company/Enterprise Type]}{[City, State]}
+{[Your Title/Founder Status] — [Business/Project Name]}{[Start Date] – [End Date / Present]}
+\end{resumeentrywide}
+\begin{itemize}
+\item 
+\item 
+\item 
+\end{itemize}
+\vspace{6pt}
+\begin{resumeentrywide}
+{[Company Name]}{[City, State]}
+{[Your Internship Title]}{[Start Date] – [End Date]}
+\end{resumeentrywide}
+\begin{itemize}
+\item 
+\end{itemize}
+\vspace{6pt}
+\begin{resumeentrywide}
+{[Company/Center Name]}{[City, State]}
+{[Your Job Title]}{[Start Date] – [End Date]}
+\end{resumeentrywide}
+\begin{itemize}
+\item 
+\end{itemize}
+\vspace{6pt}
+%==================== PROJECTS ====================%
+\section*{PROJECT EXPERIENCE}
+\begin{resumeentrywide}
+{[Engineering/Design Student Club Name]}{[City, State]}
+{[Your Engineering Title / Role]}{[Start Date] – [End Date / Present]}
+\end{resumeentrywide}
+\begin{itemize}
+    \item 
+    \item 
+\end{itemize}
+\vspace{6pt}
+\begin{resumeentrywide}
+{[Academic Department / Systems Design Engineering]}{[City, State]}
+{[Your Academic/Student Title]}{[Start Date] – [End Date / Present]}
+\end{resumeentrywide}
+\begin{itemize}
+    \item 
+    \item 
+    \item 
+\end{itemize}
+\vspace{6pt}
+%==================== LEADERSHIP & INVOLVEMENT ====================%
+\section*{LEADERSHIP \& AWARDS}
+\textbf{[Professional/Student Organization Name (e.g., SHPE/NSBE)]} — [Your Officer Title]\hfill [Start Date] – [End Date / Present]
+\begin{itemize}
+\item 
+\item 
+\end{itemize}
+\vspace{6pt}
+\textbf{[Fraternity/Greek/Campus Association Name]} — [Your Chair/Officer Title] \hfill [Start Date] – [End Date / Present]
+\begin{itemize}
+    \item 
+    \item 
+\end{itemize}
+\vspace{6pt}
+\textbf{[Club/Intramural Sport Name]} — [Your Leadership Title / Captain Status] \hfill [Start Date] – [End Date / Present]
+\vspace{6pt}
+\textbf{Awards:} [Award/Scholarship 1], [Award/Scholarship 2], and [Award/Scholarship 3]
+\end{document}
