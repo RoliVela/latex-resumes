@@ -238,32 +238,6 @@ ul, ol {
   align-items: center;
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px 7px 12px;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-soft);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent-ink);
-  margin-bottom: 20px;
-}
-
-.eyebrow::before {
-  content: "";
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-grad);
-}
-
 .hero h1 {
   font-size: clamp(44px, 5.5vw, 64px);
   line-height: 1.05;
