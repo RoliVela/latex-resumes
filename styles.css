@@ -1092,6 +1092,21 @@ ul, ol {
   display: none !important;
 }
 
+.ai-stepper:not([hidden]):not(.is-hidden) {
+  animation: stepper-fade-in 0.35s var(--ease-out);
+}
+
+@keyframes stepper-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .ai-step {
   display: flex;
   flex-direction: column;
@@ -1344,7 +1359,8 @@ ul, ol {
 
   .skeleton-title,
   .skeleton-text,
-  .skeleton-preview {
+  .skeleton-preview,
+  .ai-stepper:not([hidden]):not(.is-hidden) {
     animation: none;
   }
 
