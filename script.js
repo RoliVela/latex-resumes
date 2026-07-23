@@ -408,14 +408,12 @@
   function showStepper() {
     if (!aiStepper) return;
     aiStepper.hidden = false;
-    aiStepper.classList.remove('is-hidden');
     setStepperStep(0);
   }
 
   function hideStepper() {
     if (!aiStepper) return;
     aiStepper.hidden = true;
-    aiStepper.classList.add('is-hidden');
   }
 
   function setStepperStep(stepIndex) {

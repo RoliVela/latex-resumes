@@ -1087,12 +1087,11 @@ ul, ol {
   border: 1px solid var(--border-hair);
 }
 
-.ai-stepper[hidden],
-.ai-stepper.is-hidden {
+.ai-stepper[hidden] {
   display: none !important;
 }
 
-.ai-stepper:not([hidden]):not(.is-hidden) {
+.ai-stepper:not([hidden]) {
   animation: stepper-fade-in 0.35s var(--ease-out);
 }
 
@@ -1360,7 +1359,7 @@ ul, ol {
   .skeleton-title,
   .skeleton-text,
   .skeleton-preview,
-  .ai-stepper:not([hidden]):not(.is-hidden) {
+  .ai-stepper:not([hidden]) {
     animation: none;
   }
 
