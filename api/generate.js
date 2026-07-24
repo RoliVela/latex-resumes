@@ -13,7 +13,7 @@ const TEMPLATES = require('./templates');
 const MODEL = process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct';
 const FALLBACK_MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct';
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const MAX_RESUME_CHARS = 15000;
+const MAX_RESUME_CHARS = 10000;
 const RATE_LIMIT = 5;
 const RATE_WINDOW_SECONDS = 24 * 60 * 60; // 24 hours
 
@@ -282,7 +282,7 @@ module.exports = async function handler(req, res) {
     {
       role: 'system',
       content:
-        'You convert a person\'s résumé text into a filled-in copy of a provided LaTeX template. Output only raw LaTeX — no explanations, no markdown fences. Preserve the template preamble, packages, and custom macros/environments exactly. Only replace bracketed [PLACEHOLDER] content and section entries with the person\'s real information, matching the template\'s existing structure and formatting commands. Only use information present in the résumé text. Do NOT invent, embellish, or fabricate employers, dates, GPAs, or achievements. If a field is not in the source, leave the placeholder or omit that line — never make something up. Escape LaTeX special characters in all user-derived text: & % $ # _ { } ~ ^ \\\\ (e.g. & -> \\\\, % -> \\\\\%, _ -> \\\\_, etc.). URLs go in the template\'s existing \\href pattern. Keep it to the template\'s length/structure (one page where the template is one page). Return a complete, compilable document from \\documentclass to \\end{document}.',
+        'You convert a person\'s résumé text into a filled-in copy of a provided LaTeX template. Output only raw LaTeX — no explanations, no markdown fences. Preserve the template preamble, packages, and custom macros/environments exactly. Only replace bracketed [PLACEHOLDER] content and section entries with the person\'s real information, matching the template\'s existing structure and formatting commands. Only use information present in the résumé text. Do NOT invent, embellish, or fabricate employers, dates, GPAs, or achievements. If a field is not in the source, leave the placeholder or omit that line — never make something up. Escape LaTeX special characters in all user-derived text: & % $ # _ { } ~ ^ \\\\ (e.g. & -> \\\\, % -> \\\\\%, _ -> \\\\_, etc.). URLs go in the template\'s existing \\href pattern. Keep it to the template\'s length/structure (one page where the template is one page). If filling in the content leaves any bullet points empty, remove those empty \\item lines entirely instead of leaving blank bullets. Return a complete, compilable document from \\documentclass to \\end{document}.',
     },
     {
       role: 'user',

@@ -403,7 +403,7 @@
      AI Autofill
      ------------------------------------------------------------------ */
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-  const MAX_RESUME_CHARS = 15000;
+  const MAX_RESUME_CHARS = 10000;
   const ALLOWED_TYPES = {
     pdf: ['application/pdf'],
     docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
