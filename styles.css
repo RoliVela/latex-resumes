@@ -1769,3 +1769,18 @@ ul, ol {
     width: 86vw;
   }
 }
+
+/* Mobile fix: let hero grid items shrink so text wraps instead of clipping */
+@media (max-width: 1024px) {
+  .hero-text,
+  .hero-visual {
+    min-width: 0;
+  }
+  .hero-text,
+  .subhead,
+  .hero-body,
+  .hero-body p,
+  .hero h1 {
+    overflow-wrap: break-word;
+  }
+}
