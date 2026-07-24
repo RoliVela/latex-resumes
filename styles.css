@@ -1469,3 +1469,303 @@ ul, ol {
     justify-content: center;
   }
 }
+
+/* ============================================================
+   Mobile UI additions — appended only, nothing above this line
+   was modified. All rules here are new selectors or are scoped
+   inside max-width media queries, so desktop (>=1024px) is
+   unaffected byte-for-byte.
+   ============================================================ */
+
+/* Hamburger nav toggle — invisible/inert on desktop */
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  transition: background 0.18s var(--ease-out);
+}
+
+.nav-toggle:hover {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.nav-toggle-bars,
+.nav-toggle-bars::before,
+.nav-toggle-bars::after {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.2s var(--ease-out), opacity 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+
+.nav-toggle-bars {
+  position: relative;
+}
+
+.nav-toggle-bars::before,
+.nav-toggle-bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.nav-toggle-bars::before { top: -6px; }
+.nav-toggle-bars::after { top: 6px; }
+
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars {
+  background: transparent;
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars::before {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars::after {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Mobile nav drawer */
+.mobile-nav {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.mobile-nav[hidden] {
+  display: none;
+}
+
+.mobile-nav.open {
+  visibility: visible;
+  opacity: 1;
+}
+
+.mobile-nav-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(33, 28, 22, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.mobile-nav-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(300px, 82vw);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  transform: translateX(100%);
+  transition: transform 0.28s var(--ease-out);
+}
+
+.mobile-nav.open .mobile-nav-panel {
+  transform: translateX(0);
+}
+
+.mobile-nav-panel .modal-close {
+  position: static;
+  align-self: flex-end;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 20px;
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-nav-links a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mobile-nav-links a:hover,
+.mobile-nav-links a:focus-visible {
+  background: rgba(79, 70, 229, 0.08);
+  text-decoration: none;
+}
+
+/* Touch-friendly hero hint — swapped in for the mouse-oriented copy */
+.stack-hint-touch {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-panel,
+  .nav-toggle-bars,
+  .nav-toggle-bars::before,
+  .nav-toggle-bars::after {
+    transition: none;
+  }
+}
+
+/* Tablet: bring the feedback/built-with combo and the how-to steps in
+   line with how support-panel and card-grid already behave at this width */
+@media (max-width: 1024px) {
+  .feedback-combo {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  /* Contain the decorative glow so it can't push the viewport sideways */
+  .templates {
+    overflow-x: hidden;
+  }
+
+  .glow-3 {
+    width: 320px;
+    height: 320px;
+  }
+
+  .stack-hint {
+    display: none;
+  }
+
+  .stack-hint-touch {
+    display: block;
+  }
+
+  .hero {
+    padding: 72px 0 56px;
+  }
+
+  .hero-grid {
+    gap: 40px;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+    max-width: none;
+  }
+
+  .subhead {
+    font-size: 17px;
+  }
+
+  .hero-body p {
+    font-size: 15px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .hero-visual {
+    min-height: 300px;
+  }
+
+  .preview-stack {
+    transform: scale(0.62);
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 24px 20px;
+  }
+
+  .card-grid {
+    gap: 20px;
+  }
+
+  .section-title {
+    font-size: 26px;
+  }
+
+  .section-intro {
+    font-size: 16px;
+  }
+
+  /* Near-full-screen modals */
+  .modal {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .modal-panel {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    margin-top: 12px;
+    padding: 20px 16px;
+  }
+
+  .modal-scroll {
+    max-height: calc(100vh - 24px - 72px);
+  }
+
+  .modal-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .preview-stack {
+    transform: scale(0.52);
+  }
+
+  .panel {
+    padding: 24px 18px;
+  }
+
+  .card {
+    padding: 20px 16px;
+  }
+
+  .section {
+    padding: 56px 0;
+  }
+
+  .mobile-nav-panel {
+    width: 86vw;
+  }
+}

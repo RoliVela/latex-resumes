@@ -25,8 +25,27 @@
         <li><a href="#support">Support</a></li>
         <li><a href="#feedback">Feedback</a></li>
       </ul>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"></span>
+      </button>
     </div>
   </nav>
+
+  <div id="mobile-nav" class="mobile-nav" hidden>
+    <div class="mobile-nav-backdrop" aria-hidden="true"></div>
+    <div class="mobile-nav-panel glass" role="dialog" aria-modal="true" aria-label="Primary navigation">
+      <button id="mobile-nav-close" class="modal-close" type="button" aria-label="Close menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <ul class="mobile-nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#how-to">How to use</a></li>
+        <li><a href="#templates">Templates</a></li>
+        <li><a href="#support">Support</a></li>
+        <li><a href="#feedback">Feedback</a></li>
+      </ul>
+    </div>
+  </div>
 
   <main id="main">
     <section id="about" class="hero" aria-labelledby="hero-title">
@@ -52,6 +71,7 @@
             <img src="assets/previews/roli.png" alt="" loading="lazy" data-index="2">
           </div>
           <p class="stack-hint" aria-hidden="true">Click to flip through</p>
+          <p class="stack-hint stack-hint-touch" aria-hidden="true">Tap to flip through</p>
         </div>
       </div>
     </section>

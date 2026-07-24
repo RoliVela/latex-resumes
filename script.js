@@ -157,6 +157,71 @@
   }
 
   /* ------------------------------------------------------------------
+     Mobile nav drawer
+     ------------------------------------------------------------------ */
+  function initMobileNav() {
+    const toggle = document.getElementById('nav-toggle');
+    const drawer = document.getElementById('mobile-nav');
+    const closeBtn = document.getElementById('mobile-nav-close');
+    const backdrop = drawer && $('.mobile-nav-backdrop', drawer);
+    if (!toggle || !drawer) return;
+
+    let open = false;
+    let focusables = [];
+
+    function openDrawer() {
+      drawer.hidden = false;
+      void drawer.offsetWidth;
+      drawer.classList.add('open');
+      toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-label', 'Close menu');
+      document.body.style.overflow = 'hidden';
+      open = true;
+      focusables = getFocusables(drawer);
+      setTimeout(() => closeBtn && closeBtn.focus(), 0);
+    }
+
+    function closeDrawer() {
+      if (!open) return;
+      drawer.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open menu');
+      document.body.style.overflow = '';
+      open = false;
+      setTimeout(() => {
+        drawer.hidden = true;
+        toggle.focus({ preventScroll: true });
+      }, 220);
+    }
+
+    function trap(evt) {
+      if (evt.key !== 'Tab' || focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (evt.shiftKey) {
+        if (document.activeElement === first) {
+          evt.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last) {
+        evt.preventDefault();
+        first.focus();
+      }
+    }
+
+    toggle.addEventListener('click', () => (open ? closeDrawer() : openDrawer()));
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
+    $$('a', drawer).forEach((a) => a.addEventListener('click', closeDrawer));
+
+    document.addEventListener('keydown', (evt) => {
+      if (!open) return;
+      if (evt.key === 'Escape') closeDrawer();
+      trap(evt);
+    });
+  }
+
+  /* ------------------------------------------------------------------
      Hero preview stack cycling
      ------------------------------------------------------------------ */
   function initPreviewStack() {
@@ -1021,6 +1086,7 @@
      ------------------------------------------------------------------ */
   function init() {
     setYear();
+    initMobileNav();
     initSmoothScroll();
     initPreviewStack();
     initModal();
