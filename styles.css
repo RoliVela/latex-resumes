@@ -1784,3 +1784,18 @@ ul, ol {
     overflow-wrap: break-word;
   }
 }
+
+/* Mobile fix: keep résumé preview flush within the card (match card padding) */
+@media (max-width: 720px) {
+  .thumb-wrap {
+    margin-left: -20px;
+    margin-right: -20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .thumb-wrap {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+}
