@@ -230,6 +230,19 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  if (req.method === 'GET') {
+    Object.entries(withCorsHeaders({}, origin)).forEach(([k, v]) => res.setHeader(k, v));
+    res.status(200).json({
+      ok: true,
+      model: MODEL,
+      fallbackModel: FALLBACK_MODEL,
+      hasApiKey: !!NVIDIA_API_KEY,
+      hasTurnstileSecret: !!TURNSTILE_SECRET_KEY,
+      rateLimitConfigured: !!(getKvUrl() && getKvToken()),
+    });
+    return;
+  }
+
   if (req.method !== 'POST') {
     sendError(405, 'Method not allowed');
     return;
