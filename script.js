@@ -241,12 +241,15 @@
       );
 
       const settle = () => {
-        // Advance the underlying stack-position attributes to match where
-        // the animations landed, then cancel the animations so the CSS
-        // rules (already matching) take back over with no visual jump.
+        // Hand off from the Web Animations API to the resting CSS positions
+        // with transitions frozen, so the attribute swap + cancel can't
+        // fire a second (choppy) transition. Reflow, then restore.
+        cards.forEach((c) => { c.style.transition = 'none'; });
         rotatePositions();
         [liftAnim, midAnim, backAnim].forEach((anim) => anim.cancel());
         leaving.style.zIndex = '';
+        void stack.offsetWidth;
+        cards.forEach((c) => { c.style.transition = ''; });
         isAnimating = false;
       };
 

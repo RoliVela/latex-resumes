@@ -339,17 +339,10 @@ ul, ol {
   z-index: 3;
 }
 
-/* Hover: lift the front card and fan the others */
-.preview-stack:hover [data-stack-pos="2"] {
-  transform: translate(25px, -10px) rotate(0deg);
-}
-
-.preview-stack:hover [data-stack-pos="1"] {
-  transform: translate(71px, 30px) rotate(6deg);
-}
-
-.preview-stack:hover [data-stack-pos="0"] {
-  transform: translate(-16px, 92px) rotate(-8deg);
+/* Subtle hover cue — brightness only, no transform, so it never fights
+   the click-to-cycle animation and can't cause a post-animation snap. */
+.preview-stack:hover img {
+  filter: brightness(1.03) saturate(1.02);
 }
 
 .stack-hint {
