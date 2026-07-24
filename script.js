@@ -620,7 +620,7 @@
     hideStepper();
     if (currentAutofillKey) hideCardSkeleton(currentAutofillKey);
     if (aiFileInput) aiFileInput.value = '';
-    updateGenerateButton();
+    resetGenerateButton();
 
     aiModal.hidden = false;
     void aiModal.offsetWidth;
@@ -678,6 +678,22 @@
     updateGenerateButton();
   }
 
+  function setGenerateLoading() {
+    if (!aiGenerate) return;
+    aiGenerate.disabled = true;
+    aiGenerate.classList.add('loading');
+    aiGenerate.setAttribute('aria-busy', 'true');
+    aiGenerate.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span><span>Generating…</span>';
+  }
+
+  function resetGenerateButton() {
+    if (!aiGenerate) return;
+    aiGenerate.classList.remove('loading');
+    aiGenerate.removeAttribute('aria-busy');
+    aiGenerate.textContent = 'Generate';
+    updateGenerateButton();
+  }
+
   async function handleGenerate() {
     if (!currentAutofillKey || !currentFile) return;
 
@@ -687,7 +703,7 @@
       return;
     }
 
-    aiGenerate.disabled = true;
+    setGenerateLoading();
     showStepper();
     showCardSkeleton(currentAutofillKey);
     setAiStatus('Reading your résumé…', 'loading');
@@ -700,7 +716,7 @@
       setAiStatus('We couldn\'t read text from this file — try a text-based PDF, a DOCX, or paste your info.', 'error');
       markStepperError();
       hideCardSkeleton(currentAutofillKey);
-      aiGenerate.disabled = false;
+      resetGenerateButton();
       return;
     }
 
@@ -708,7 +724,7 @@
       setAiStatus('We couldn\'t read text from this file — try a text-based PDF, a DOCX, or paste your info.', 'error');
       markStepperError();
       hideCardSkeleton(currentAutofillKey);
-      aiGenerate.disabled = false;
+      resetGenerateButton();
       return;
     }
 
@@ -742,6 +758,7 @@
           setAiStatus(message, 'error');
         }
         refreshTurnstile();
+        resetGenerateButton();
         return;
       }
 
@@ -750,6 +767,7 @@
         hideCardSkeleton(currentAutofillKey);
         setAiStatus('The AI returned an empty response — please try again.', 'error');
         refreshTurnstile();
+        resetGenerateButton();
         return;
       }
 
@@ -768,6 +786,7 @@
       hideCardSkeleton(currentAutofillKey);
       setAiStatus('The AI is busy — please try again.', 'error');
       refreshTurnstile();
+      resetGenerateButton();
     }
   }
 
