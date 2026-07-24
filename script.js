@@ -20,7 +20,7 @@
   const EMAILJS_TEMPLATE_ID = 'template_jsji0pk';
 
   // TODO(Roli): replace with your Stripe Payment Link URL.
-  const STRIPE_PAYMENT_LINK = ''; // e.g. "https://buy.stripe.com/xxxxxxxx"
+  const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/3cIdR8b7w8WPev98dv57W00'; // e.g. "https://buy.stripe.com/xxxxxxxx"
 
   const TEMPLATES = {
     undergraduate: {
